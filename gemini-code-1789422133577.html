@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soul MC Rank Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #090a0f;
+            --bg-card: rgba(18, 20, 29, 0.75);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-accent: #33394d;
+            --cyan: #00f2fe;
+            --gold: #ffd700;
+            --orange: #ff9f43;
+            --discord: #5865F2;
+            --discord-hover: #4752C4;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Dynamic Background */
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-glow-1 {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, rgba(9, 10, 15, 0) 70%);
+            filter: blur(80px);
+            animation: floatGlow1 14s ease-in-out infinite alternate;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            bottom: -10%;
+            right: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(255, 159, 67, 0.12) 0%, rgba(9, 10, 15, 0) 70%);
+            filter: blur(100px);
+            animation: floatGlow2 18s ease-in-out infinite alternate;
+        }
+
+        .bg-watermark-container {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.03;
+            filter: blur(4px);
+            user-select: none;
+        }
+
+        .bg-watermark-text {
+            font-size: 25vw;
+            font-weight: 900;
+            letter-spacing: 20px;
+            color: var(--cyan);
+            white-space: nowrap;
+            animation: slowPulseText 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatGlow1 {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(10%, 15%) scale(1.2); }
+            100% { transform: translate(-5%, 5%) scale(0.9); }
+        }
+
+        @keyframes floatGlow2 {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-15%, -10%) scale(1.15); }
+            100% { transform: translate(5%, -5%) scale(1); }
+        }
+
+        @keyframes slowPulseText {
+            0% { transform: scale(1); opacity: 0.03; filter: blur(4px); }
+            100% { transform: scale(1.05); opacity: 0.06; filter: blur(2px); }
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 5%;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: rgba(9, 10, 15, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .logo .soul-text { color: var(--text-main); }
+        .logo span {
+            color: var(--cyan);
+            display: inline-block;
+            animation: cyanPulse 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes cyanPulse {
+            0% { color: #00f2fe; text-shadow: 0 0 5px rgba(0, 242, 254, 0.4); }
+            100% { color: #4facfe; text-shadow: 0 0 12px rgba(0, 242, 254, 0.8); }
+        }
+
+        nav { display: flex; gap: 30px; }
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        nav a:hover, nav a.active { color: var(--text-main); }
+
+        .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+        .btn-account {
+            background: rgba(18, 20, 29, 0.8);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-account:hover { border-color: var(--cyan); }
+
+        .btn-discord-nav {
+            background: var(--discord);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .btn-discord-nav:hover { background: var(--discord-hover); }
+
+        /* Navigation Pages */
+        .page { display: none; }
+        .page.active { display: block; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+        .hero { display: flex; justify-content: space-between; align-items: center; padding: 40px 0; }
+        .hero-left { max-width: 600px; }
+
+        .hero-tag {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #00f2fe, #4facfe, #00c6ff, #00f2fe);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientWave 4s linear infinite;
+        }
+
+        @keyframes gradientWave {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero-title {
+            font-size: 60px;
+            font-weight: 800;
+            line-height: 1.05;
+            margin-bottom: 20px;
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, #ffffff 0%, #00f2fe 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc { color: var(--text-muted); font-size: 16px; margin-bottom: 30px; }
+
+        /* Animated Section Blocks */
+        .animated-section-block {
+            position: relative;
+            background: rgba(13, 15, 23, 0.7);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 50px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .animated-section-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--section-color, #00f2fe), transparent);
+            animation: borderSlide 3s linear infinite;
+        }
+
+        @keyframes borderSlide {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .section-survival { --section-color: #00f2fe; }
+        .section-practice { --section-color: #ff9f43; }
+        .section-coins { --section-color: #ffd700; }
+
+        .section-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--section-color);
+            color: var(--section-color);
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 30px;
+        }
+
+        /* Grid Layouts */
+        .ranks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .coins-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+        .rank-card, .coin-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rank-card:hover, .coin-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--section-color);
+            box-shadow: 0 12px 30px -10px var(--section-color);
+        }
+
+        .rank-card.featured { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); }
+        .rank-card.practice-card { border-color: var(--orange); box-shadow: 0 0 20px rgba(255, 159, 67, 0.2); }
+        .coin-card.popular { border-color: var(--gold); box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+
+        .card-top { display: flex; justify-content: space-between; margin-bottom: 16px; }
+        .card-roman { font-size: 13px; color: var(--text-muted); font-weight: 700; }
+        .card-tag { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--cyan); text-transform: uppercase; }
+        .card-tag.orange { color: var(--orange); }
+        .card-tag.gold { color: var(--gold); }
+
+        .rank-name { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+        .rank-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; min-height: 40px; }
+        .price-box { margin-bottom: 20px; }
+        .price-type { font-size: 11px; color: var(--text-muted); font-weight: 700; }
+        .price-val { font-size: 32px; font-weight: 800; }
+
+        .btn-actions-group { display: flex; flex-direction: column; gap: 10px; }
+
+        .btn-view-perks {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-accent);
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-view-perks:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+            background: rgba(0, 242, 254, 0.08);
+        }
+
+        .btn-discord-buy {
+            width: 100%;
+            background: var(--discord);
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .btn-discord-buy:hover { background: var(--discord-hover); }
+
+        /* MODAL POPUP FOR PERKS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-card {
+            background: #0f121d;
+            border: 1px solid var(--cyan);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 242, 254, 0.2);
+            animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #fff; }
+
+        .modal-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+        .modal-subtitle { font-size: 13px; color: var(--cyan); font-weight: 700; margin-bottom: 20px; }
+
+        .modal-perks-list { list-style: none; margin-bottom: 25px; max-height: 320px; overflow-y: auto; padding-right: 5px; }
+        .modal-perks-list li {
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-perks-list li::before { content: "✓"; color: var(--cyan); font-weight: 800; }
+
+        /* Table Wrapper */
+        .table-wrapper { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            overflow-x: auto; 
+            margin-top: 20px;
+            backdrop-filter: blur(12px);
+        }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
+        th, td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        th { font-weight: 700; color: var(--text-muted); background: rgba(0,0,0,0.4); }
+        tr:hover { background: rgba(255, 255, 255, 0.03); }
+        td:first-child, th:first-child { text-align: left; font-weight: 700; color: var(--text-main); }
+        .check { color: var(--cyan); font-weight: 800; }
+        .cross { color: #475569; }
+
+        /* Account Card */
+        .account-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 480px;
+            margin-top: 20px;
+            backdrop-filter: blur(12px);
+        }
+        .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--cyan);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .google-auth-btn {
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 15px;
+            transition: 0.2s;
+        }
+        .google-auth-btn:hover { background: #e5e5e5; }
+
+        @media (max-width: 900px) {
+            .ranks-grid { grid-template-columns: 1fr; }
+            .coins-grid { grid-template-columns: 1fr 1fr; }
+            .hero-title { font-size: 40px; }
+            .animated-section-block { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- DYNAMIC BACKGROUND CANVAS -->
+    <div class="bg-canvas">
+        <div class="bg-glow-1"></div>
+        <div class="bg-glow-2"></div>
+        <div class="bg-watermark-container">
+            <div class="bg-watermark-text">SOUL MC</div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo" onclick="showPage('store')">
+            <span class="soul-text">SOUL</span> <span>MC</span>
+        </div>
+        <nav>
+            <a href="#" onclick="showPage('store')" id="nav-store" class="active">Store</a>
+            <a href="#" onclick="showPage('perks')" id="nav-perks">Perks</a>
+        </nav>
+        <div class="nav-actions">
+            <button class="btn-account" id="acc-btn" onclick="showPage('account')">Sign In</button>
+            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-nav">Join Discord</a>
+        </div>
+    </header>
+
+    <!-- STORE PAGE -->
+    <div id="page-store" class="page active">
+        <div class="container">
+            <div class="hero">
+                <div class="hero-left">
+                    <div class="hero-tag">SOUL MC / OFFICIAL STORE</div>
+                    <h1 class="hero-title"><span>Dominate the realm. Claim your legacy.</span></h1>
+                    <p class="hero-desc">Choose from Survival Ranks, Practice Ranks, or load up on Soul Coins to get exclusive features in-game.</p>
+                </div>
+            </div>
+
+            <!-- SECTION 1: SURVIVAL RANKS -->
+            <div class="animated-section-block section-survival">
+                <div class="section-badge">MODE 01</div>
+                <h2 class="section-title">Survival Ranks</h2>
+
+                <div class="ranks-grid">
+                    <!-- Slayer -->
+                    <div class="rank-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">I</span><span class="card-tag">FIRST BLOOD</span></div>
+                            <div class="rank-name">Slayer</div>
+                            <div class="rank-desc">A sharp start for players ready to be seen.</div>
+                            <div class="price-box"><div class="price-type">ONE-TIME</div><div class="price-val">₹80</div></div>
+                        </div>
+                        <div class="btn-actions-group">
+                            <button class="btn-view-perks" onclick="openPerksModal('Slayer', '₹80', ['3 Homes', '2 Vaults', '5 AH Slots', '/craft', '/lay', 'Rank Prefix', 'Basic Rank Kit', '+2,500 Claim Blocks', 'Daily Reward', '24h AH Duration', '10s Teleport Cooldown'])">⚡ View Perks</button>
+                            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                        </div>
+                    </div>
+
+                    <!-- Destroyer -->
+                    <div class="rank-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">II</span><span class="card-tag">BREAK THE LINE</span></div>
+                            <div class="rank-name">Destroyer</div>
+                            <div class="rank-desc">More presence. More room to make noise.</div>
+                            <div class="price-box"><div class="price-type">ONE-TIME</div><div class="price-val">₹160</div></div>
+                        </div>
+                        <div class="btn-actions-group">
+                            <button class="btn-view-perks" onclick="openPerksModal('Destroyer', '₹160', ['6 Homes', '4 Vaults', '10 AH Slots', '/craft', '/lay', '/hat', '/anvil', 'Rank Prefix', 'Basic+ Rank Kit', '+5,000 Claim Blocks', 'Daily Reward', '36h AH Duration', '8s Teleport Cooldown'])">⚡ View Perks</button>
+                            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                        </div>
+                    </div>
+
+                    <!-- Prime -->
+                    <div class="rank-card featured">
+                        <div>
+                            <div class="card-top"><span class="card-roman">III</span><span class="card-tag">POPULAR</span></div>
+                            <div class="rank-name">Prime</div>
+                            <div class="rank-desc">The community favourite for a reason.</div>
+                            <div class="price-box"><div class="price-type">ONE-TIME</div><div class="price-val">₹320</div></div>
+                        </div>
+                        <div class="btn-actions-group">
+                            <button class="btn-view-perks" onclick="openPerksModal('Prime', '₹320', ['9 Homes', '6 Vaults', '15 AH Slots', '/craft', '/lay', '/hat', '/near', '/anvil', '/enderchest', 'Nickname Access', 'Rank Prefix', 'Advanced Rank Kit', '+10,000 Claim Blocks', 'Daily Reward', 'Weekly Reward', '48h AH Duration', '6s Teleport Cooldown'])">⚡ View Perks</button>
+                            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                        </div>
+                    </div>
+
+                    <!-- Legendary -->
+                    <div class="rank-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">IV</span><span class="card-tag">MYTHIC</span></div>
+                            <div class="rank-name">Legendary</div>
+                            <div class="rank-desc">Turn every arrival into an event.</div>
+                            <div class="price-box"><div class="price-type">ONE-TIME</div><div class="price-val">₹550</div></div>
+                        </div>
+                        <div class="btn-actions-group">
+                            <button class="btn-view-perks" onclick="openPerksModal('Legendary', '₹550', ['12 Homes', '8 Vaults', '20 AH Slots', '/craft, /lay, /hat, /near, /feed', '/heal (1/day)', '/back & /trash', '/anvil, /enderchest, /grindstone', 'Nickname & Colors', 'Rank Prefix & Join/Leave Msg', 'Premium Rank Kit', '+20,000 Claim Blocks', 'Daily & Weekly Rewards', '72h AH Duration', '5s Teleport Cooldown'])">⚡ View Perks</button>
+                            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                        </div>
+                    </div>
+
+                    <!-- Soul -->
+                    <div class="rank-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">V</span><span class="card-tag">INNER CIRCLE</span></div>
+                            <div class="rank-name">Soul</div>
+                            <div class="rank-desc">For the names people remember.</div>
+                            <div class="price-box"><div class="price-type">ONE-TIME</div><div class="price-val">₹870</div></div>
+                        </div>
+                        <div class="btn-actions-group">
+                            <button class="btn-view-perks" onclick="openPerksModal('Soul', '₹870', ['16 Homes', '10 Vaults', '25 AH Slots', '/craft, /lay, /hat, /near, /feed', '/heal (2/day)', '/back & /trash', '/ptime & /pweather', '/anvil, /enderchest, /grindstone', 'Nickname & Colors', 'Rank Prefix & Join/Leave Msg', 'Elite Rank Kit', '+35,000 Claim Blocks', 'Daily & Weekly Rewards', '96h AH Duration', '3s Teleport Cooldown'])">⚡ View Perks</button>
+                            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                        </div>
+                    </div>
+
+                    <!-- Soul+ -->
+                    <div class="rank-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">VI</span><span class="card-tag">ULTIMATE</span></div>
+                            <div class="rank-name">Soul+</div>
+                            <div class="rank-desc">The complete Soul MC identity.</div>
+                            <div class="price-box"><div class="price-type">ONE-TIME</div><div class="price-val">₹1,250</div></div>
+                        </div>
+                        <div class="btn-actions-group">
+                            <button class="btn-view-perks" onclick="openPerksModal('Soul+', '₹1,250', ['20 Homes', '12 Vaults', '30 AH Slots', '/craft, /lay, /hat, /near, /feed', '/heal (3/day)', '/back & /trash', '/ptime & /pweather', '/anvil, /enderchest, /grindstone', 'Nickname & Colors', 'Rank Prefix & Custom Join/Leave', 'Ultimate Rank Kit', '+50,000 Claim Blocks', 'Daily & Weekly Rewards', '120h AH Duration', '0s Teleport Cooldown (Instant)'])">⚡ View Perks</button>
+                            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: PRACTICE RANKS -->
+            <div class="animated-section-block section-practice">
+                <div class="section-badge">MODE 02</div>
+                <h2 class="section-title">Practice Arena Ranks</h2>
+
+                <div class="ranks-grid">
+                    <div class="rank-card practice-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">PVP I</span><span class="card-tag orange">DUEL PRO</span></div>
+                            <div class="rank-name">Practice Master</div>
+                            <div class="rank-desc">Designed specifically for practice arena warriors.</div>
+                            <div class="price-box"><div class="price-type">ONE-TIME</div><div class="price-val">₹250</div></div>
+                        </div>
+                        <div class="btn-actions-group">
+                            <button class="btn-view-perks" onclick="openPerksModal('Practice Master', '₹250', ['Unlimited Private Arenas', 'Access to Custom Bot Duels', 'Exclusive Practice Prefix & Tag', 'Priority Duel Queue Access', 'PvP Kit Unlocked'])">⚡ View Perks</button>
+                            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy" style="background:#ff9f43; color:#000;">Buy via Discord</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: SOUL COINS -->
+            <div class="animated-section-block section-coins">
+                <div class="section-badge">MODE 03</div>
+                <h2 class="section-title">Soul Coins Store</h2>
+
+                <div class="coins-grid">
+                    <div class="coin-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">C1</span><span class="card-tag gold">PACK</span></div>
+                            <div class="rank-name">1,000 Coins</div>
+                            <div class="rank-desc">Quick coin boost for basic items.</div>
+                            <div class="price-box"><div class="price-type">ONE-TIME</div><div class="price-val">₹50</div></div>
+                        </div>
+                        <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                    </div>
+
+                    <div class="coin-card popular">
+                        <div>
+                            <div class="card-top"><span class="card-roman">C2</span><span class="card-tag gold">+200 EXTRA</span></div>
+                            <div class="rank-name">3,000 Coins</div>
+                            <div class="rank-desc">Great pack for kits and cosmetics.</div>
+                            <div class="price-box"><div class="price-type">BEST VALUE</div><div class="price-val">₹120</div></div>
+                        </div>
+                        <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                    </div>
+
+                    <div class="coin-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">C3</span><span class="card-tag gold">+750 EXTRA</span></div>
+                            <div class="rank-name">7,500 Coins</div>
+                            <div class="rank-desc">Unlock rare cosmetics and practice trails.</div>
+                            <div class="price-box"><div class="price-type">PACK</div><div class="price-val">₹280</div></div>
+                        </div>
+                        <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                    </div>
+
+                    <div class="coin-card">
+                        <div>
+                            <div class="card-top"><span class="card-roman">C4</span><span class="card-tag gold">+2,000 EXTRA</span></div>
+                            <div class="rank-name">15,000 Coins</div>
+                            <div class="rank-desc">Max coins pack for full customization.</div>
+                            <div class="price-box"><div class="price-type">MEGA PACK</div><div class="price-val">₹500</div></div>
+                        </div>
+                        <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Buy via Discord</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PERKS POPUP MODAL -->
+    <div class="modal-overlay" id="perksModal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closePerksModal()">✕</button>
+            <div class="modal-title" id="m-rank-name">Rank Name</div>
+            <div class="modal-subtitle" id="m-rank-price">Price</div>
+            <ul class="modal-perks-list" id="m-perks-list"></ul>
+            <a href="https://discord.gg/8zDWQ9nYPY" target="_blank" class="btn-discord-buy">Purchase via Discord</a>
+        </div>
+    </div>
+
+    <!-- PERKS PAGE (EXACT IMAGE DATA) -->
+    <div id="page-perks" class="page">
+        <div class="container">
+            <div style="margin: 40px 0 30px;">
+                <h2 style="font-size: 40px; font-weight: 800;">Rank Perks Comparison</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Perk</th>
+                            <th>Slayer</th>
+                            <th>Destroyer</th>
+                            <th>Prime</th>
+                            <th>Legendary</th>
+                            <th>Soul</th>
+                            <th>Soul+</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Homes</td><td>3</td><td>6</td><td>9</td><td>12</td><td>16</td><td>20</td></tr>
+                        <tr><td>Vaults</td><td>2</td><td>4</td><td>6</td><td>8</td><td>10</td><td>12</td></tr>
+                        <tr><td>AH Slots</td><td>5</td><td>10</td><td>15</td><td>20</td><td>25</td><td>30</td></tr>
+                        <tr><td>/craft</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/lay</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/hat</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/near</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/feed</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/heal</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td>1/day</td><td>2/day</td><td>3/day</td></tr>
+                        <tr><td>/back</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/trash</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/ptime</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/pweather</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>Nickname</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>Nickname Colors</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>Rank Prefix</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>Join/Leave</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td>Custom</td></tr>
+                        <tr><td>Rank Kit</td><td>Basic</td><td>Basic+</td><td>Advanced</td><td>Premium</td><td>Elite</td><td>Ultimate</td></tr>
+                        <tr><td>Claim Blocks</td><td>+2,500</td><td>+5,000</td><td>+10,000</td><td>+20,000</td><td>+35,000</td><td>+50,000</td></tr>
+                        <tr><td>Daily Reward</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>Weekly Reward</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>AH Duration</td><td>24h</td><td>36h</td><td>48h</td><td>72h</td><td>96h</td><td>120h</td></tr>
+                        <tr><td>Teleport Cooldown</td><td>10s</td><td>8s</td><td>6s</td><td>5s</td><td>3s</td><td>0s</td></tr>
+                        <tr><td>/anvil</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/enderchest</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                        <tr><td>/grindstone</td><td class="cross">—</td><td class="cross">—</td><td class="cross">—</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCOUNT PAGE -->
+    <div id="page-account" class="page">
+        <div class="container">
+            <span class="hero-tag">PLAYER PORTAL / AUTHENTICATION</span>
+            <h1 class="hero-title" style="font-size: 48px; margin-top: 10px;" id="acc-heading"><span>Account Login</span></h1>
+            
+            <div class="account-card" id="auth-box-logged-out">
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">Sign in with Google to sync your in-game purchases and profile status.</p>
+                <button class="google-auth-btn" id="google-login-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.28v3.15C3.25 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.28C.46 8.2 0 10.04 0 12s.46 3.8 1.28 5.42l4-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.7 1.28 6.58l4 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+                    Sign In with Google
+                </button>
+            </div>
+
+            <div class="account-card" id="auth-box-logged-in" style="display: none;">
+                <div class="profile-header">
+                    <div class="avatar" id="acc-avatar">U</div>
+                    <div>
+                        <div style="font-size: 18px; font-weight: 800;" id="acc-name">User</div>
+                        <div style="font-size: 13px; color: var(--text-muted);" id="acc-email">user@gmail.com</div>
+                    </div>
+                </div>
+                <button class="btn-secondary" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: #fff; cursor: pointer;" id="google-logout-btn">Sign Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+
+            document.getElementById('nav-store').classList.remove('active');
+            document.getElementById('nav-perks').classList.remove('active');
+            if (pageId === 'store') document.getElementById('nav-store').classList.add('active');
+            if (pageId === 'perks') document.getElementById('nav-perks').classList.add('active');
+
+            window.scrollTo(0, 0);
+        }
+
+        /* Perks Modal Functions */
+        function openPerksModal(name, price, perks) {
+            document.getElementById('m-rank-name').innerText = name + " Rank";
+            document.getElementById('m-rank-price').innerText = price + " • Full Perks List";
+            
+            const list = document.getElementById('m-perks-list');
+            list.innerHTML = '';
+            perks.forEach(p => {
+                const li = document.createElement('li');
+                li.innerText = p;
+                list.appendChild(li);
+            });
+
+            document.getElementById('perksModal').classList.add('active');
+        }
+
+        function closePerksModal() {
+            document.getElementById('perksModal').classList.remove('active');
+        }
+    </script>
+
+    <!-- FIREBASE AUTH -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-analytics.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAigtOlWYs6RWE2QpetLkIMmnowD15gcjw",
+            authDomain: "soulmcstore-897b9.firebaseapp.com",
+            projectId: "soulmcstore-897b9",
+            storageBucket: "soulmcstore-897b9.firebasestorage.app",
+            messagingSenderId: "1023946095219",
+            appId: "1:1023946095219:web:5a4e3b8ba40c42c1d04806",
+            measurementId: "G-EJX7WWWXHM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const loginBtn = document.getElementById('google-login-btn');
+        const logoutBtn = document.getElementById('google-logout-btn');
+
+        loginBtn.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Firebase Login Error:", error);
+                alert("Sign-in failed: " + error.message);
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Sign Out Error:", error);
+            }
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            const loggedOutBox = document.getElementById('auth-box-logged-out');
+            const loggedInBox = document.getElementById('auth-box-logged-in');
+            const accHeading = document.getElementById('acc-heading');
+            const accBtn = document.getElementById('acc-btn');
+            const accName = document.getElementById('acc-name');
+            const accEmail = document.getElementById('acc-email');
+            const accAvatar = document.getElementById('acc-avatar');
+
+            if (user) {
+                loggedOutBox.style.display = 'none';
+                loggedInBox.style.display = 'block';
+                accHeading.innerHTML = `<span>Welcome back!</span>`;
+                accBtn.innerText = `My Account`;
+                accName.innerText = user.displayName || "Player";
+                accEmail.innerText = user.email || "";
+
+                if (user.photoURL) {
+                    accAvatar.innerHTML = `<img src="${user.photoURL}" alt="Profile">`;
+                } else {
+                    accAvatar.innerText = (user.displayName || "P")[0].toUpperCase();
+                }
+            } else {
+                loggedOutBox.style.display = 'block';
+                loggedInBox.style.display = 'none';
+                accHeading.innerHTML = '<span>Account Login</span>';
+                accBtn.innerText = 'Sign In';
+            }
+        });
+    </script>
+</body>
+</html>
